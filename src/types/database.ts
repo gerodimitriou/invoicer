@@ -1,9 +1,9 @@
 /**
  * Row types for the tables in supabase/migrations.
  *
- * These are written by hand rather than generated, because the schema is small
- * and this keeps the repo free of a codegen step. If the schema grows, swap
- * this file for `supabase gen types typescript`.
+ * Written by hand rather than generated, because the schema is small and this
+ * keeps the repo free of a codegen step. If it grows, swap this file for the
+ * output of `supabase gen types typescript`.
  */
 
 export type Plan = "free" | "pro";
@@ -48,25 +48,36 @@ export type Invoice = {
   updated_at: string;
 };
 
-/** Shape passed to `createClient<Database>()` so queries are typed. */
+export type StripeEvent = {
+  id: string;
+  type: string;
+  processed_at: string;
+};
+
+/** Columns the database fills in for us on insert. */
+type Generated = "id" | "created_at" | "updated_at";
+
+/** Passed to `createClient<Database>()` so every query is typed. */
 export type Database = {
   public: {
     Tables: {
       profiles: {
         Row: Profile;
-        Insert: Pick<Profile, "id" | "email"> & Partial<Profile>;
-        Update: Partial<Profile>;
+        Insert: Pick<Profile, "id" | "email"> & Partial<Omit<Profile, "id" | "email">>;
+        Update: Partial<Omit<Profile, "id">>;
+        Relationships: [];
       };
       invoices: {
         Row: Invoice;
-        Insert: Omit<Invoice, "id" | "created_at" | "updated_at"> &
-          Partial<Pick<Invoice, "id">>;
-        Update: Partial<Invoice>;
+        Insert: Omit<Invoice, Generated> & Partial<Pick<Invoice, Generated>>;
+        Update: Partial<Omit<Invoice, "id" | "user_id">>;
+        Relationships: [];
       };
       stripe_events: {
-        Row: { id: string; type: string; processed_at: string };
-        Insert: { id: string; type: string };
-        Update: never;
+        Row: StripeEvent;
+        Insert: Pick<StripeEvent, "id" | "type"> & Partial<Pick<StripeEvent, "processed_at">>;
+        Update: Partial<StripeEvent>;
+        Relationships: [];
       };
     };
     Views: Record<never, never>;

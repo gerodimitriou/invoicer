@@ -6,7 +6,9 @@ export function formatMoney(amount: number, currency: string): string {
     style: "currency",
     currency,
     minimumFractionDigits: 2,
-  }).format(amount);
+    // Postgres numeric can arrive as a string depending on the driver, so
+    // coerce before formatting.
+  }).format(Number(amount));
 }
 
 export function formatDate(value: string | null): string {
