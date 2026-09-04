@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { currentPeriodEnd, planForStatus } from "@/lib/stripe/plan";
 import { serverEnv } from "@/lib/env";
+import type { Plan } from "@/types/database";
 
 // Signature verification needs the raw body and Node's crypto, so this handler
 // cannot run on the edge runtime.
@@ -30,29 +31,43 @@ function idOf(value: string | { id: string } | null): string | null {
 }
 
 /**
- * Writes the current state of a Stripe subscription onto the matching profile.
+ * Recomputes a user's plan from everything Stripe currently knows about that
+ * customer, and writes the result to their profile.
  *
- * The subscription is re-fetched from Stripe rather than read out of the event
- * payload. Webhook deliveries are not ordered, so an "updated" event can arrive
- * after a "deleted" one for the same subscription. Asking Stripe for the
- * current state means we always store the latest truth instead of whichever
- * event happened to land last.
+ * It deliberately works off the customer rather than off the subscription in
+ * the event. Webhook deliveries are not ordered, and a customer accumulates
+ * subscription records over time: cancelling and resubscribing leaves the old
+ * cancelled one behind alongside a new active one. Acting on a single
+ * subscription means a late "deleted" event for the old one would downgrade
+ * someone who is currently paying. Asking Stripe for all of them and checking
+ * whether any is active makes the outcome the same whatever order the events
+ * turn up in.
  */
-async function syncSubscription(subscriptionId: string, userIdHint?: string | null) {
+async function syncCustomer(customerId: string, userIdHint?: string | null) {
   const stripe = getStripe();
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
-  const customerId = idOf(subscription.customer);
-  // Set when the checkout session or the subscription was created by this app.
-  const userId = userIdHint ?? subscription.metadata?.supabase_user_id ?? null;
+  const subscriptions = await stripe.subscriptions.list({
+    customer: customerId,
+    status: "all",
+    limit: 10,
+  });
+
+  // Stripe returns these newest first.
+  const granting = subscriptions.data.find(
+    (subscription) => planForStatus(subscription.status) === "pro",
+  );
+  const current = granting ?? subscriptions.data[0] ?? null;
+  const plan: Plan = granting ? "pro" : "free";
+
+  const userId = userIdHint ?? current?.metadata?.supabase_user_id ?? null;
 
   const admin = createAdminClient();
 
   const update = {
-    plan: planForStatus(subscription.status),
-    stripe_subscription_id: subscription.id,
-    current_period_end: currentPeriodEnd(subscription),
-    ...(customerId ? { stripe_customer_id: customerId } : {}),
+    plan,
+    stripe_customer_id: customerId,
+    stripe_subscription_id: current?.id ?? null,
+    current_period_end: granting ? currentPeriodEnd(granting) : null,
   };
 
   // Prefer the user id we put in metadata. Fall back to the customer id for
@@ -61,23 +76,20 @@ async function syncSubscription(subscriptionId: string, userIdHint?: string | nu
   const query = admin.from("profiles").update(update);
   const { data, error } = userId
     ? await query.eq("id", userId).select("id")
-    : await query.eq("stripe_customer_id", customerId ?? "").select("id");
+    : await query.eq("stripe_customer_id", customerId).select("id");
 
   if (error) {
     throw new Error(`Failed to update profile: ${error.message}`);
   }
 
   if (!data || data.length === 0) {
-    // Not an error worth retrying: the subscription belongs to a Stripe
-    // customer with no profile in this database.
-    console.warn(
-      `[stripe] no profile matched subscription ${subscription.id} (customer ${customerId})`,
-    );
+    // Not worth retrying: this Stripe customer has no profile in this database.
+    console.warn(`[stripe] no profile matched customer ${customerId}`);
     return;
   }
 
   console.log(
-    `[stripe] ${subscription.id} is ${subscription.status}, set plan to ${update.plan}`,
+    `[stripe] customer ${customerId} has ${subscriptions.data.length} subscription(s), set plan to ${plan}`,
   );
 }
 
@@ -85,21 +97,24 @@ async function handleEvent(event: Stripe.Event & { type: HandledEvent }) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object;
-      const subscriptionId = idOf(session.subscription);
 
       // Ignore one-off payments; this app only sells the subscription.
-      if (session.mode !== "subscription" || !subscriptionId) return;
+      if (session.mode !== "subscription") return;
 
-      await syncSubscription(subscriptionId, session.client_reference_id);
+      const customerId = idOf(session.customer);
+      if (!customerId) return;
+
+      await syncCustomer(customerId, session.client_reference_id);
       return;
     }
 
     case "customer.subscription.created":
     case "customer.subscription.updated":
-    // A deleted subscription still reads back from Stripe with status
-    // "canceled", which maps to the free plan, so it needs no special case.
     case "customer.subscription.deleted": {
-      await syncSubscription(event.data.object.id);
+      const customerId = idOf(event.data.object.customer);
+      if (!customerId) return;
+
+      await syncCustomer(customerId);
       return;
     }
   }

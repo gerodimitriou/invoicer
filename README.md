@@ -57,10 +57,13 @@ get right:
   signal to skip it. If the handler then throws, that row is deleted again,
   otherwise Stripe's retry would be mistaken for a duplicate and silently
   dropped.
-- Webhook deliveries are **not ordered**. An `updated` event can land after a
-  `deleted` one for the same subscription. So the handler re-fetches the
-  subscription from Stripe instead of trusting the object in the payload, and
-  writes whatever the current state is.
+- Webhook deliveries are **not ordered**, and a customer collects subscription
+  records over time — cancelling and resubscribing leaves the old cancelled one
+  next to a new active one. So the handler ignores the subscription in the
+  payload entirely. It asks Stripe for all of that customer's subscriptions and
+  sets the plan based on whether any of them is active. Acting on the single
+  subscription in the event would mean a late `deleted` for the old one
+  downgrades someone who is currently paying.
 
 Signature verification needs the exact bytes Stripe sent, which is why the
 handler reads `await request.text()` rather than `request.json()`. Parsing and
