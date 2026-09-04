@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #fbfbfa;
+  --color-surface: #ffffff;
+  --color-ink: #14161a;
+  --color-muted: #6b7280;
+  --color-line: #e6e6e3;
+  --color-accent: #1f6feb;
+  --color-accent-soft: #eff4ff;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+/* Hide the number input spinners - quantity and price fields read better
+   without them and the arrows fight the compact table layout. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
