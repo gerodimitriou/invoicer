@@ -21,7 +21,7 @@ export function LoginForm({ next }: { next: string }) {
       <h1 className="mt-8 text-2xl font-medium tracking-tight">
         {mode === "signin" ? "Sign in" : "Create an account"}
       </h1>
-      <p className="mt-2 text-sm text-muted">
+      <p className="text-muted mt-2 text-sm">
         {mode === "signin"
           ? "Welcome back."
           : "You start on the free plan. No card needed."}
@@ -41,7 +41,7 @@ export function LoginForm({ next }: { next: string }) {
             type="email"
             autoComplete="email"
             required
-            className="mt-1.5 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+            className="border-line bg-surface focus:border-accent mt-1.5 w-full rounded-md border px-3 py-2 text-sm outline-none"
           />
         </div>
 
@@ -56,7 +56,7 @@ export function LoginForm({ next }: { next: string }) {
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
             required
             minLength={6}
-            className="mt-1.5 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+            className="border-line bg-surface focus:border-accent mt-1.5 w-full rounded-md border px-3 py-2 text-sm outline-none"
           />
         </div>
 
@@ -66,7 +66,7 @@ export function LoginForm({ next }: { next: string }) {
           </p>
         )}
         {state && "message" in state && (
-          <p role="status" className="text-sm text-accent">
+          <p role="status" className="text-accent text-sm">
             {state.message}
           </p>
         )}
@@ -74,13 +74,13 @@ export function LoginForm({ next }: { next: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-md bg-ink px-4 py-2.5 text-sm text-white hover:opacity-90 disabled:opacity-50"
+          className="bg-ink w-full rounded-md px-4 py-2.5 text-sm text-white hover:opacity-90 disabled:opacity-50"
         >
           {pending ? "Working..." : mode === "signin" ? "Sign in" : "Create account"}
         </button>
       </form>
 
-      <p className="mt-6 text-sm text-muted">
+      <p className="text-muted mt-6 text-sm">
         {mode === "signin" ? "No account yet?" : "Already have an account?"}{" "}
         <button
           type="button"

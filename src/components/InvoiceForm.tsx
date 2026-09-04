@@ -92,7 +92,7 @@ export function InvoiceForm({
         </div>
         <div>
           <label htmlFor="due_date" className={labelClass}>
-            Due date <span className="font-normal text-muted">(optional)</span>
+            Due date <span className="text-muted font-normal">(optional)</span>
           </label>
           <input
             id="due_date"
@@ -191,7 +191,7 @@ export function InvoiceForm({
           <button
             type="button"
             onClick={addRow}
-            className="rounded-md border border-line px-3 py-1.5 text-sm hover:bg-surface"
+            className="border-line hover:bg-surface rounded-md border px-3 py-1.5 text-sm"
           >
             Add line
           </button>
@@ -200,7 +200,7 @@ export function InvoiceForm({
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[560px] border-separate border-spacing-y-2">
             <thead>
-              <tr className="text-left text-xs text-muted">
+              <tr className="text-muted text-left text-xs">
                 <th className="font-normal">Description</th>
                 <th className="w-24 font-normal">Qty</th>
                 <th className="w-32 font-normal">Unit price</th>
@@ -267,7 +267,7 @@ export function InvoiceForm({
                         onClick={() => removeRow(row.key)}
                         disabled={rows.length === 1}
                         aria-label="Remove line"
-                        className="px-2 text-muted hover:text-ink disabled:opacity-30"
+                        className="text-muted hover:text-ink px-2 disabled:opacity-30"
                       >
                         &times;
                       </button>
@@ -284,7 +284,7 @@ export function InvoiceForm({
         <div className="space-y-4">
           <div>
             <label htmlFor="notes" className={labelClass}>
-              Notes <span className="font-normal text-muted">(optional)</span>
+              Notes <span className="text-muted font-normal">(optional)</span>
             </label>
             <textarea
               id="notes"
@@ -332,7 +332,7 @@ export function InvoiceForm({
             </div>
           </div>
 
-          <dl className="space-y-1.5 rounded-lg border border-line bg-surface p-4 text-sm">
+          <dl className="border-line bg-surface space-y-1.5 rounded-lg border p-4 text-sm">
             <div className="flex justify-between">
               <dt className="text-muted">Subtotal</dt>
               <dd className="tabular-nums">{formatMoney(totals.subtotal, currency)}</dd>
@@ -341,7 +341,7 @@ export function InvoiceForm({
               <dt className="text-muted">Tax</dt>
               <dd className="tabular-nums">{formatMoney(totals.taxAmount, currency)}</dd>
             </div>
-            <div className="flex justify-between border-t border-line pt-1.5 font-medium">
+            <div className="border-line flex justify-between border-t pt-1.5 font-medium">
               <dt>Total</dt>
               <dd className="tabular-nums">{formatMoney(totals.total, currency)}</dd>
             </div>
@@ -359,11 +359,11 @@ export function InvoiceForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-ink px-4 py-2.5 text-sm text-white hover:opacity-90 disabled:opacity-50"
+          className="bg-ink rounded-md px-4 py-2.5 text-sm text-white hover:opacity-90 disabled:opacity-50"
         >
           {pending ? "Saving..." : "Save invoice"}
         </button>
-        <span className="text-sm text-muted">You can download the PDF next.</span>
+        <span className="text-muted text-sm">You can download the PDF next.</span>
       </div>
     </form>
   );

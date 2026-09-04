@@ -23,23 +23,23 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-medium tracking-tight">Invoices</h1>
         <Link
           href="/dashboard/invoices/new"
-          className="rounded-md bg-ink px-4 py-2 text-sm text-white hover:opacity-90"
+          className="bg-ink rounded-md px-4 py-2 text-sm text-white hover:opacity-90"
         >
           New invoice
         </Link>
       </div>
 
       {invoices.length === 0 ? (
-        <div className="mt-10 rounded-lg border border-dashed border-line p-12 text-center">
-          <p className="text-sm text-muted">
+        <div className="border-line mt-10 rounded-lg border border-dashed p-12 text-center">
+          <p className="text-muted text-sm">
             No invoices yet. Create your first one to get a PDF.
           </p>
         </div>
       ) : (
-        <div className="mt-8 overflow-x-auto rounded-lg border border-line bg-surface">
+        <div className="border-line bg-surface mt-8 overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[540px] text-sm">
             <thead>
-              <tr className="border-b border-line text-left text-xs text-muted">
+              <tr className="border-line text-muted border-b text-left text-xs">
                 <th className="px-4 py-3 font-normal">Number</th>
                 <th className="px-4 py-3 font-normal">Client</th>
                 <th className="px-4 py-3 font-normal">Issued</th>
@@ -48,7 +48,7 @@ export default async function DashboardPage() {
             </thead>
             <tbody>
               {invoices.map((invoice) => (
-                <tr key={invoice.id} className="border-b border-line last:border-0">
+                <tr key={invoice.id} className="border-line border-b last:border-0">
                   <td className="px-4 py-3">
                     <Link
                       href={`/dashboard/invoices/${invoice.id}`}
@@ -58,7 +58,7 @@ export default async function DashboardPage() {
                     </Link>
                   </td>
                   <td className="px-4 py-3">{invoice.client_name}</td>
-                  <td className="px-4 py-3 text-muted">
+                  <td className="text-muted px-4 py-3">
                     {formatDate(invoice.issue_date)}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums">

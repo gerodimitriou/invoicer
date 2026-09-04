@@ -75,7 +75,8 @@ export type Database = {
       };
       stripe_events: {
         Row: StripeEvent;
-        Insert: Pick<StripeEvent, "id" | "type"> & Partial<Pick<StripeEvent, "processed_at">>;
+        Insert: Pick<StripeEvent, "id" | "type"> &
+          Partial<Pick<StripeEvent, "processed_at">>;
         Update: Partial<StripeEvent>;
         Relationships: [];
       };

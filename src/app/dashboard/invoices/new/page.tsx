@@ -25,7 +25,7 @@ export default async function NewInvoicePage() {
 
   return (
     <div>
-      <Link href="/dashboard" className="text-sm text-muted hover:text-ink">
+      <Link href="/dashboard" className="text-muted hover:text-ink text-sm">
         &larr; Invoices
       </Link>
       <h1 className="mt-3 text-2xl font-medium tracking-tight">New invoice</h1>
