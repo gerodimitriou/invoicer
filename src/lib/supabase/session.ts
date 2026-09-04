@@ -7,7 +7,7 @@ const PROTECTED_PREFIX = "/dashboard";
 
 /**
  * Refreshes the Supabase session cookie on every request and keeps
- * unauthenticated visitors out of the dashboard.
+ * unauthenticated visitors out of the dashboard. Called from src/proxy.ts.
  *
  * The cookie juggling below is required: tokens rotate, and the new cookies
  * have to be written onto the response that is actually returned, otherwise
