@@ -86,6 +86,15 @@ deliberately **no** update policy: if the browser could write to that table it
 could set its own plan to `pro` and skip paying. The only thing that writes
 `plan` is the webhook handler, which uses the service role key.
 
+`0002` came out of running Supabase's database linter against `0001`. It pins
+`search_path` on the remaining trigger function and revokes `EXECUTE` on both
+of them. Postgres grants `EXECUTE` to `PUBLIC` by default and Supabase exposes
+the `public` schema through PostgREST, which had left a `SECURITY DEFINER`
+function reachable at `/rest/v1/rpc/handle_new_user` with only the anon key.
+Triggers have their permissions checked when they are created rather than each
+time they fire, so revoking the grant does not stop signups from creating
+profiles.
+
 ## Running it locally
 
 You need a Supabase project and a Stripe account. Both are free and everything
@@ -98,8 +107,10 @@ npm install
 cp .env.example .env.local
 ```
 
-**Supabase.** Create a project, then paste
-`supabase/migrations/0001_init.sql` into the SQL editor and run it. From
+**Supabase.** Create a project, then run the two files in
+`supabase/migrations/` in the SQL editor, in order: `0001_init.sql` builds the
+schema, `0002_harden_functions.sql` applies the fixes the Supabase database
+linter asks for. From
 Project Settings > API copy the project URL, the anon key and the service role
 key. While you are in the dashboard, find the email provider settings under
 Authentication and turn off "Confirm email" — otherwise every signup needs a
