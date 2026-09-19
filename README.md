@@ -116,6 +116,11 @@ key. While you are in the dashboard, find the email provider settings under
 Authentication and turn off "Confirm email" — otherwise every signup needs a
 working inbox.
 
+One thing that catches people out: Supabase pauses free projects after about a
+week of no traffic. The app then fails to sign anyone in, because nothing can
+reach the auth server. The login form says as much when that happens; the fix
+is to hit Restore in the Supabase dashboard.
+
 **Stripe.** In the dashboard, with test mode on:
 
 - Developers > API keys, copy the secret key (`sk_test_...`).
