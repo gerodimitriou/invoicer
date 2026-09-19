@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
+import { authErrorMessage } from "@/lib/auth-errors";
 import { publicEnv } from "@/lib/env";
 
 export type AuthState = { error: string } | { message: string } | null;
@@ -29,7 +30,7 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: error.message };
+    return { error: authErrorMessage(error) };
   }
 
   revalidatePath("/", "layout");
@@ -53,7 +54,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: authErrorMessage(error) };
   }
 
   // With email confirmation switched off in Supabase, sign up returns a
